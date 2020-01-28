@@ -1,3 +1,40 @@
+#install.packages("fpc")
+#install.packages("dbscan")
+#install.packages("editrules")
+#install.packages("MASS")
+#install.packages("VGAM")
+#install.packages("mda")
+#install.packages("caret")
+#install.packages("RWeka")
+#install.packages("ipred")
+#install.packages("partykit")
+#install.packages("party")
+#install.packages("class")
+#install.packages("naivebayes")
+#install.packages("e1071")
+#install.packages("randomForest")
+#install.packages("gbm")
+library(neuralnet)
+library(tidyverse)
+library(randomForest)
+library(e1071)
+library(naivebayes)
+library(class)
+library(party)
+library(partykit)
+library(ipred)
+library(RWeka)
+library(gbm)
+library(mda)
+library(caret)
+library(VGAM)
+library(MASS)
+library(editrules)
+library(arules)
+library(arulesViz)
+library(cluster)
+library(factoextra)
+
 library(readr)
 file <- "C:/ProgramyZainstalowane/R_Workspace/drug_consumption.data"
 drugs <- read_csv(file, col_names = FALSE)
@@ -89,12 +126,10 @@ for (i in 1:nrow(drugs.alcohol)) {
 }
 
 
-# ----- WYKRESY ----------------------------------------------------------
-
-install.packages("plotrix")
+#---Alcohol drunk by gender---
+#install.packages("plotrix")
 library(plotrix)
 
-#---Alcohol drunk by gender---
 drugsGender <- data.frame("Gender" <- drugs["gender"],
                           "Class" <- drugs.alcohol["alcohol"])
 
@@ -151,7 +186,6 @@ barplot(t(table(drugsCountry)),
 
 
 # ----- Normalization----------------------------------------------
-
 norm <- function(x) {
   (x-min(x))/(max(x)-min(x))
 }
@@ -165,7 +199,6 @@ drugs.norm <- data.frame(norm(drugs.alcohol[1]), norm(drugs.alcohol[2]),
                          drugs.alcohol[13])
 
 # -----Test and Training Sets----------------------------
-
 set.seed(1234)
 ind <- sample(2, nrow(drugs.norm), replace=TRUE, prob=c(0.67, 0.33))
 drugs.train <- drugs.norm[ind==1,1:13]
@@ -179,9 +212,6 @@ ind <- sample(2, nrow(drugs.norm2), replace=TRUE, prob=c(0.67, 0.33))
 drugs.train2 <- drugs.norm2[ind==1,1:13]
 drugs.test2 <- drugs.norm2[ind==2,1:13]
 #------Linear Classification - Quadratic Discriminant Analysis and Linear Discriminant Analysis-----------------------------
-#install.packages("MASS")
-library(MASS)
-
 #Linear Discriminant Analysis
 drugs.lda<-MASS::lda(factor(alcohol)~age+gender+education+country+
               ethnicity+nscore+escore+oscore+ascore+cscore+impulsive+ss,drugsOld.train)
@@ -206,9 +236,6 @@ drugs.mass.accuracy=drugs.mass.conf$overall[1][1]*100
 
 
 #------Linear Classification - Logistic regression--------------------------------------------------
-#install.packages("VGAM")
-library(VGAM)
-
 drugs.vgam<-vglm(factor(alcohol)~age+gender+education+country+
                    ethnicity+nscore+escore+oscore+ascore+cscore+impulsive+ss,
                  family = "multinomial",drugsOld.train)
@@ -225,11 +252,6 @@ cf$overall[1][1]*100
 drugs.vgam.accuracy=drugs.vgam.conf$overall[1][1]*100
 
 #------Flexible Discriminant Analysis--------------------------------------------------
-#install.packages("mda")
-#install.packages("caret")
-library(mda)
-library(caret)
-
 drugs.mda<-fda(factor(alcohol)~age+gender+education+country+
                  ethnicity+nscore+escore+oscore+ascore+cscore+impulsive+ss,data=drugsOld.train)
 summary(drugs.mda)
@@ -239,10 +261,7 @@ cf<-confusionMatrix(drugs.mda.tab)
 cf$overall[1][1]*100
 drugs.mda.accuracy=cf$overall[1][1]*100
 
-
-
 #------GBM--------------------------------------------------
-library(gbm)
 drugs.gbm<-gbm(factor(alcohol)~age+gender+education+country+
              ethnicity+nscore+escore+oscore+ascore+cscore+impulsive+ss,data=drugsOld.train,
              distribution="multinomial")
@@ -255,9 +274,6 @@ drugs.gbm.tab
 confusionMatrix(drugs.gbm.tab)
 drugs.gbm.eval.acc=491/590 *100
 # -----C4.5-----------------------------------
-#install.packages("RWeka")
-library(RWeka)
-
 drugs.c45<-J48(factor(alcohol) ~ age + gender + education + country + ethnicity
                + nscore + escore + oscore + ascore + cscore + impulsive + ss,
                data=drugsOld.train)
@@ -268,9 +284,6 @@ drugs.c45.conf.matrix <- table(drugs.c45.predicted, drugs.c45.real)
 drugs.c45.accuracy <- sum(diag(drugs.c45.conf.matrix))/sum(drugs.c45.conf.matrix) *100
 drugs.c45.accuracy
 # -----Bagging CART-----------------------------------
-#install.packages("ipred")
-library(ipred)
-
 drugs.bagg<-bagging(factor(alcohol) ~ age + gender + education + country + ethnicity
                     + nscore + escore + oscore + ascore + cscore + impulsive + ss,
                     data=drugsOld.train)
@@ -282,11 +295,6 @@ drugs.bagg.accuracy <- sum(diag(drugs.bagg.conf.matrix))/sum(drugs.bagg.conf.mat
 drugs.bagg.accuracy
 
 # -----Decision Tree-----------------------------------
-#install.packages("partykit")
-#install.packages("party")
-library(party)
-library(partykit)
-
 #New algorythm 18 July 2019
 drugsNew.ctree <- partykit::ctree(factor(alcohol) ~ age + gender + education + country + ethnicity
                             + nscore + escore + oscore + ascore + cscore + impulsive + ss,
@@ -316,10 +324,6 @@ tree.accuracy <- sum(diag(tree.conf.matrix))/sum(tree.conf.matrix)
 
 
 # -----KNN-------------------------------------------------
-
-#install.packages("class")
-library(class)
-
 knn.3 <- knn(drugs.train[,1:12], drugs.test[,1:12], cl=drugs.train[,13], k=3, prob=FALSE)
 
 knn.predicted <- knn.3
@@ -329,11 +333,6 @@ knn.accuracy <- sum(diag(knn.conf.matrix))/sum(knn.conf.matrix)
 
 
 # -----NaiveBayes Porbability------------------------------------------
-#install.packages("naivebayes")
-#install.packages("e1071")
-library(e1071)
-library(naivebayes)
-
 #Method from June 3/2019 Year 
 nbayesNew <- bernoulli_naive_bayes(as.matrix(drugs.train[,1:12]), drugs.train[,13], laplace = 0.5)
 nbayesNew.predicted <- predict(nbayesNew, as.matrix(drugs.test[,1:12]))
@@ -351,8 +350,6 @@ nbayes.conf.matrix <- table(nbayes.predicted, nbayes.real)
 nbayes.accuracy <- sum(diag(nbayes.conf.matrix))/sum(nbayes.conf.matrix)
 
 #-----Random Forest-----------------------------------------------
-#install.packages("randomForest")
-library(randomForest)
 head(drugsOld.train)
 data <- drugsOld.train
 dataValid <- drugsOld.test
@@ -375,7 +372,6 @@ table(predTrain, data$alcohol)
 accuracyRandomForest = mean(predTrain == dataValid$alcohol) 
 
 # -----SVM-----------------------------------------------
-library("e1071")
 data <- drugs.train
 model_svm <- svm(alcohol ~ ., data=data)
 summary(model_svm)
@@ -384,11 +380,6 @@ table(pred, data$alcohol)
 accuracySVM = mean(pred == dataValid$alcohol) 
 
 # -----Neural Net-----------------------------------------------
-#install.packages("gbm")
-library(neuralnet)
-library("class")
-library("e1071")
-library(tidyverse)
 drugs.train[,1:12]
 drugs.train[,13]
 drugs.test[,1:12]
@@ -498,11 +489,6 @@ text(x = accuracyPlot, y = accuracies, label = round(accuracies,5),
      pos = 1, cex = 0.8, col = "red")
 
 # ----- K-means -------------------------------------
-#install.packages("fpc")
-#install.packages("dbscan")
-#install.packages("editrules")
-library(editrules)
-
 drugs.log <- log(drugs.norm[,1:12])
 drugs.log <- drugs.log[is.finite(rowSums(drugs.log)),]
 drugs.log$gender <- NULL
@@ -520,25 +506,18 @@ plot(drugs.final, col = drugs.kmeans[["cluster"]],
      main="K-mean")
 points(drugs.kmeans[["centers"]], col = 1:2, pch = 16, cex=1.5)
 #DBSCAN
-library("factoextra")
 set.seed(123)
-# fpc package
 dbscan::kNNdistplot(drugs.final, k =  2)
 res.fpc <- fpc::dbscan(drugs.final, eps = 3.3, MinPts = 2)
 plot(res.fpc, drugs.final, main = "DBSCAN", frame = FALSE)
 fviz_cluster(drugs.kmeans, drugs.final, stand = FALSE, frame = FALSE, geom = "point")
 
 #K-medoids
-library(cluster)
-library(factoextra)
 pam.res <- pam(drugs.final, 2)
 print(pam.res)
 fviz_cluster(pam.res, drugs.final, stand = FALSE, frame = FALSE, geom = "point")
 
 #-----Associastion rulsets-----------------------------------------------
-
-library(arules)
-library(arulesViz)
 raDrugs <- drugs[,2:6]
 raDrugs$alcohol <- drugs.alcohol$alcohol
 
