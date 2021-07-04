@@ -1,2 +1,2 @@
-Data Classifaction project done in R language on Master Degree studies.
+Data Classifaction project comparing different alogithms in R tested on "alcohol and drug addiction" database
 For more read .pdf file.
